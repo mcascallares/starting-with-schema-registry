@@ -1,0 +1,76 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.mcascallares</groupId>
+  <artifactId>starting-with-schema-registry</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>schema-references-sandbox</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+ </properties>
+
+  <dependencies>
+    <!-- dependency for generated Avro Java classes -->
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <version>1.10.2</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.0</version>
+     </plugin>
+
+      <!-- pluging to interact with Schema registry -->
+      <plugin>
+        <groupId>io.confluent</groupId>
+        <artifactId>kafka-schema-registry-maven-plugin</artifactId>
+        <version>6.2.0</version>
+        <configuration>
+          <schemaRegistryUrls>
+            <param>http://localhost:8081</param>
+          </schemaRegistryUrls>
+          <outputDirectory>${project.basedir}/src/main/resources/avro</outputDirectory>
+          <subjectPatterns>
+            <!-- this could be a regex, cool!
+              <param>^TestSubject000-(key|value)$</param> 
+            -->
+            <param>customer</param>
+          </subjectPatterns>
+        </configuration>
+      </plugin>
+
+      <!-- pluging to generate Java classes from Avro files -->
+      <plugin>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-maven-plugin</artifactId>
+        <version>1.10.2</version>
+        <executions>
+          <execution>
+          <phase>generate-sources</phase>
+          <goals>
+            <goal>schema</goal>
+          </goals>
+          <configuration>
+            <sourceDirectory>${project.basedir}/src/main/resources/avro</sourceDirectory>
+            <includes>
+              <include>customer.avsc</include>
+            </includes>
+            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+          </configuration>
+        </execution>
+      </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
